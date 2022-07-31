@@ -1,111 +1,115 @@
-'use strict'
-const gameMode = {
-    playerWithPlayer: 0,
-    playerWithComputer: 1,
-}
-
 const gameMark = {
     cross: 'cross',
     circle: 'circle'
 }
 
 class Game {
+    #mode;
+    #gameMap;
+    #firstPlayer;
+    #secondPlayer;
+    #playerWhoMadeLastStep;
+
     constructor() {
-        this.gameMap;
-        this.firstPlayer;
-        this.secondPlayer;
-        this.currentPlayer;
-        this.mode;
         this.lastRole = gameMark.circle;
     }
 
-    initialize() {
-        let select = document.getElementById("game-area");
-        const size = +(select.value);
-        select = document.getElementById("game-mode");
-        this.mode = +(select.value);
-        this.gameMap = new GameMap(size);
-        this.gameMap.buildGameMap();
-
-        document.getElementById('btn-start').setAttribute('disabled', 'true');
-        if (this.mode === 0) {
-            this.firstPlayer = new Player(1);
-            this.secondPlayer = new Player(2);
-            this.currentPlayer = new Player(2);
-        } else if (this.mode === 1) {
-            this.firstPlayer = new Player(3);
-            this.secondPlayer = new Player(0); // It's computer!
-            this.currentPlayer = new Player(0);
-        }
+    setGameMap(value) {
+        this.#gameMap = new GameMap(value);
     }
 
-    playerStepWithComputer(id) {
-        if (this.lastRole === gameMark.circle) {
-            let elem = document.getElementById(id);
-            elem.innerHTML = `<img src="./${gameMark.cross}.png">`;
-            let i = +(id.slice(4, 6));
-            this.gameMap.allCells[i].setCellOccupied();
-            game.gameMap.allCells[i].setCellOccupiedByElement(gameMark.cross);
-            this.currentPlayer = this.secondPlayer;
-        }
-        if (isGameOver()) return;
-        let temp = this;
-        setTimeout(function() { temp.computerStep(); }, 300);
+    getGameMap() {
+        return this.#gameMap;
     }
 
-    generateNumberOfCell() {
-        return (Math.floor(Math.random() * (this.gameMap.size**2)));
+    setMode(value) {
+        this.#mode = value;
     }
 
-    computerStep() {
-        let id = this.generateNumberOfCell();
-        if (this.gameMap.allCells[id].isCellOccupied()) {
-            this.computerStep();
+    getMode() {
+        return this.#mode;
+    }
+
+    setFirstPlayer(value) {
+        this.#firstPlayer = new Player(value);
+    }
+
+    getFirstPlayer() {
+        return this.#firstPlayer;
+    }
+
+    setSecondPlayer(value) {
+        if (value === 0) {
+            this.#secondPlayer = new ComputerPlayer(value);
         } else {
-            let idHTML = `cell${id}`;
-            document.getElementById(idHTML).innerHTML = `<img src="./${gameMark.circle}.png">`;
-            this.gameMap.allCells[id].setCellOccupied();
-            game.gameMap.allCells[id].setCellOccupied(gameMark.circle);
-            this.currentPlayer = this.firstPlayer;
-            isGameOver();
+            this.#secondPlayer = new Player(value);
         }
     }
 
-    playerWithPlayerStep(id) {
+    getSecondPlayer() {
+        return this.#secondPlayer;
+    }
+
+    setPlayerWhoMadeLastStep(value) {
+        this.#playerWhoMadeLastStep = new Player(value);
+    }
+
+    getPlayerWhoMadeLastStep() {
+        return this.#playerWhoMadeLastStep;
+    }
+
+    doStepInModePlayerWithPlayer(id) {
+        let cell = document.getElementById(id);
+        this.getGameMap().getOccupiedCells().push(id);
+        let i = +(id.slice(4, 6));
+        this.getGameMap().getAllCells()[i].setCellOccupied();
+
         if (this.lastRole === gameMark.cross) {
             this.lastRole = gameMark.circle;
-            let cell = document.getElementById(id);
-            cell.innerHTML = `<img src="./${gameMark.circle}.png">`;
-            game.gameMap.occupiedCells.push(id);
-            let i = +(id.slice(4, 6));
-            game.gameMap.allCells[i].setCellOccupied();
-            game.gameMap.allCells[i].setCellOccupiedByElement(gameMark.circle);
-            this.currentPlayer = this.secondPlayer;
+            cell.innerHTML = `<img src="./${gameMark.circle}.png" alt="${gameMark.circle}">`;
+            this.getGameMap().getAllCells()[i].setCellOccupiedByElement(gameMark.circle);
+            this.#playerWhoMadeLastStep = this.#secondPlayer;
             return;
         }
 
         if (this.lastRole === gameMark.circle) {
             this.lastRole = gameMark.cross;
-            let cell = document.getElementById(id);
-            cell.innerHTML = `<img src="./${gameMark.cross}.png">`;
-            game.gameMap.occupiedCells.push(id);
-            let i = +(id.slice(4, 6));
-            game.gameMap.allCells[i].setCellOccupied();
-            game.gameMap.allCells[i].setCellOccupiedByElement(gameMark.cross);
-            this.currentPlayer = this.firstPlayer;
+            cell.innerHTML = `<img src="./${gameMark.cross}.png" alt="${gameMark.cross}">`;
+            this.getGameMap().getAllCells()[i].setCellOccupiedByElement(gameMark.cross);
+            this.#playerWhoMadeLastStep = this.#firstPlayer;
             return;
         }
     }
 
+    doStepInModePlayerWithComputer(id) {
+        if (this.lastRole === gameMark.circle) {
+            let elem = document.getElementById(id);
+            elem.innerHTML = `<img src="./${gameMark.cross}.png" alt="${gameMark.cross}">`;
+            let i = +(id.slice(4, 6));
+            this.#gameMap.getAllCells()[i].setCellOccupied();
+            this.#gameMap.getAllCells()[i].setCellOccupiedByElement(gameMark.cross);
+            this.#playerWhoMadeLastStep = this.#secondPlayer;
+        }
+        if (isGameOver()){
+            return;
+        }
+
+        let temp = this;
+        setTimeout(function() {
+            temp.getSecondPlayer().doComputerStep(temp.getGameMap().getAllCells());
+            }, 300);
+        this.#playerWhoMadeLastStep = this.#firstPlayer;
+    }
+
     getWinnerMessage() {
-        if (this.mode === 1) {
-            if (this.currentPlayer.getPlayerType() === 3) {
+        if (this.#mode === 1) {
+            if (this.#playerWhoMadeLastStep.getPlayerType() === 3) {
                 alert("Переміг комп'ютер!");
             } else {
                 alert("Переміг гравець!");
             }
         } else {
-            alert(`Переміг гравець ${this.currentPlayer.getPlayerType()}`);
+            alert(`Переміг гравець ${this.#playerWhoMadeLastStep.getPlayerType()}`);
         }
     }
 }

@@ -15,10 +15,6 @@ class Cell {
     }
 
     isCellOccupied() {
-        if (this.isOccupied === true) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.isOccupied;
     }
 }

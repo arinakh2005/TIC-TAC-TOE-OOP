@@ -10,5 +10,7 @@ class Player {
         this.playerType = playerType;
     }
 
-    getPlayerType() { return this.playerType; }
+    getPlayerType() {
+        return this.playerType;
+    }
 }

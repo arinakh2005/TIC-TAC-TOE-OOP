@@ -11,22 +11,22 @@
 <body>
     <h1>Будь ласка, оберіть режим гри</h1>
     <div class="select-game-mode">
-        <select id="game-mode" onchange="restart()">
+        <select id="game-mode" onchange="restartGame()">
             <option value="0">player VS player</option>
             <option value="1">player VS computer</option>
         </select>
     </div>
     <h1>Оберіть розмір поля</h1>
     <div class="select-game-area">
-        <select id="game-area" onchange="restart()">
+        <select id="game-area" onchange="restartGame()">
             <option value="3">3x3</option>
             <option value="4">4x4</option>
             <option value="5">5x5</option>
         </select>
     </div>
     <div class="btn">
-        <button class="btn-start" id="btn-start" onclick="playNewGame()">Розпочати гру</button>
-        <button class="btn-clear" id="btn-clear" disabled onclick="restart()">Очистити поле</button>
+        <button class="btn-start" id="btn-start" onclick="createNewGame()">Розпочати гру</button>
+        <button class="btn-clear" id="btn-clear" disabled onclick="restartGame()">Очистити поле</button>
     </div>
     <div class="table-game" id="table-game">
         <table class="table"></table>
@@ -38,6 +38,7 @@
 <script src="Game.js"></script>
 <script src="GameMap.js"></script>
 <script src="Player.js"></script>
+<script src="ComputerPlayer.js"></script>
 <script src="Cell.js"></script>
 
 </html>
