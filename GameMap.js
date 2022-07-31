@@ -1,11 +1,12 @@
 class GameMap {
 
+    #currentCell;
+    #allCells = [];
+    #occupiedCells = [];
+    #numberOfCellsToWin = 3;
+
     constructor(size) {
         this.size = size;
-        this.cell = Cell;
-        this.allCells = [];
-        this.occupiedCells = [];
-        this.numberOfCellsToWin = 3;
     }
 
     buildGameMap() {
@@ -17,9 +18,9 @@ class GameMap {
                 td.classList.add("cell");
                 let id = `cell${((i * this.size) + j)}`;
                 td.setAttribute('id', `${id}`);
-                this.cell = new Cell(id);
+                this.#currentCell = new Cell(id);
                 td.setAttribute('onclick', `doStep("${id}")`);
-                this.allCells.push(this.cell);
+                this.#allCells.push(this.#currentCell);
                 tr.appendChild(td);
             }
             table.appendChild(tr);
@@ -28,43 +29,69 @@ class GameMap {
         box.style.visibility = 'visible';
     }
 
-    isCellAvailableForStep(idHTML) {
-        let id = +(idHTML.slice(4,6));
-        if (this.allCells[id].isCellOccupied()) return true;
-    }
-
     clearGameMap() {
         let elem = document.getElementsByClassName("table")[0];
         elem.parentNode.removeChild(elem);
-        const spaceForTableGrid = document.getElementsByClassName('table-game')[0];
-        const table = document.createElement('table');
-        table.classList.add('table');
-        spaceForTableGrid.appendChild(table);
+
+        let spaceForElement = document.getElementsByClassName('table-game')[0];
+
+        const gameMap = document.createElement('table');
+        gameMap.classList.add('table');
+        spaceForElement.appendChild(gameMap);
 
         elem = document.getElementById("player-number");
         elem.parentNode.removeChild(elem);
-        const spaceForLabelWithPlayersNumber = document.getElementsByClassName('table-game')[0];
+
         const labelWithPlayersNumber = document.createElement('p');
         labelWithPlayersNumber.id = 'player-number';
         labelWithPlayersNumber.textContent = "Хід: ...";
-        spaceForLabelWithPlayersNumber.appendChild(labelWithPlayersNumber);
+        spaceForElement.appendChild(labelWithPlayersNumber);
 
-        this.allCells = [];
-        this.occupiedCells = [];
-        this.cell= null;
+        this.#allCells = [];
+        this.#occupiedCells = [];
+        this.#currentCell = null;
         document.getElementById('btn-start').setAttribute('disabled', 'false');
     }
 
-    isAllCellsFilled() {
-        let counter = 0;
-        this.allCells.forEach(function(item) {
-            if (item.isOccupied === true) counter++;
-        });
-        if (counter === this.size ** 2) return true;
-    }
-
     checkWin() {
-        function checkMainDiagonal(size, allCells) {
+        if (wonInRow(this.size, this.#allCells, this.#numberOfCellsToWin)) return true;
+        if (wonInColumn(this.size, this.#allCells,this.#numberOfCellsToWin)) return true;
+        if (wonInMainDiagonal(this.size, this.#allCells)) return true;
+        if (wonInAntiDiagonal(this.size, this.#allCells)) return true;
+
+        if (this.isAllCellsFilled()) {
+            setTimeout(this.getDrawMessage, 200);
+            setTimeout(restartGame, 500);
+        }
+
+        function wonInRow(size, allCells, numberOfCellsToWin) {
+            let step = 0;
+            do {
+                for (let i = size - numberOfCellsToWin - step; i < (size * size); i += numberOfCellsToWin + (size - numberOfCellsToWin)) {
+                    if (allCells[i].occupiedBy === 'circle' && allCells[i + 1].occupiedBy === 'circle' && allCells[i + 2].occupiedBy === 'circle' ||
+                        allCells[i].occupiedBy === 'cross' && allCells[i + 1].occupiedBy === 'cross' && allCells[i + 2].occupiedBy === 'cross') {
+                        return true;
+                    }
+                }
+                step++;
+            } while (size - numberOfCellsToWin - step >= 0);
+        }
+
+        function wonInColumn(size, allCells, numberOfCellsToWin) {
+            let step = size - numberOfCellsToWin;
+            let index2;
+            let index1;
+            for (let i = 0; i < (size * (step + 1)); i++) {
+                index1 = i + numberOfCellsToWin + step;
+                index2 = i + 2 * (numberOfCellsToWin + step);
+                if (allCells[i].occupiedBy === 'circle' && allCells[index1].occupiedBy === 'circle' && allCells[index2].occupiedBy === 'circle' ||
+                    allCells[i].occupiedBy === 'cross' && allCells[index1].occupiedBy === 'cross' && allCells[index2].occupiedBy === 'cross') {
+                    return true;
+                }
+            }
+        }
+
+        function wonInMainDiagonal(size, allCells) {
             let index1;
             let index2;
             let allowableIndexes = [];
@@ -92,7 +119,7 @@ class GameMap {
             }
         }
 
-        function checkAntiDiagonal(size, allCells) {
+        function wonInAntiDiagonal(size, allCells) {
             let index1;
             let index2;
             let allowableIndexes = [];
@@ -119,44 +146,56 @@ class GameMap {
                 k++;
             }
         }
+    }
 
-        // Check for row
-        let step = 0;
-        do {
-            for (let i = this.size - this.numberOfCellsToWin - step; i < (this.size * this.size); i += this.numberOfCellsToWin + (this.size - this.numberOfCellsToWin)) {
-                if (this.allCells[i].occupiedBy === 'circle' && this.allCells[i + 1].occupiedBy === 'circle' && this.allCells[i + 2].occupiedBy === 'circle' ||
-                    this.allCells[i].occupiedBy === 'cross' && this.allCells[i + 1].occupiedBy === 'cross' && this.allCells[i + 2].occupiedBy === 'cross') {
-                    return true;
-                }
-            }
-            step++;
-        } while (this.size - this.numberOfCellsToWin - step >= 0);
-
-        //Check for column
-        step = this.size - this.numberOfCellsToWin;
-        let index2;
-        let index1;
-        for (let i = 0; i < (this.size*(step+1)); i++) {
-            index1 = i + this.numberOfCellsToWin + step;
-            index2 = i + 2 * (this.numberOfCellsToWin + step);
-            if (this.allCells[i].occupiedBy === 'circle' && this.allCells[index1].occupiedBy === 'circle' && this.allCells[index2].occupiedBy === 'circle' ||
-                this.allCells[i].occupiedBy === 'cross' && this.allCells[index1].occupiedBy === 'cross' && this.allCells[index2].occupiedBy === 'cross') {
-                return true;
-            }
+    isCellAvailableForStep(idHTML) {
+        let id = +(idHTML.slice(4,6));
+        if (this.#allCells[id].isCellOccupied()){
+            return true;
         }
+    }
 
-        //Check for diagonal
-        if (checkMainDiagonal(this.size, this.allCells)) return true;
-        if (checkAntiDiagonal(this.size, this.allCells)) return true;
-
-        // Check empty Cells
-        if (this.isAllCellsFilled()) {
-            setTimeout(this.getDrawMessage, 200);
-            setTimeout(restart, 500);
+    isAllCellsFilled() {
+        let counter = 0;
+        this.#allCells.forEach(function(item) {
+            if (item.isOccupied === true) {
+                counter++;
+            }
+        });
+        if (counter === this.size ** 2) {
+            return true;
         }
     }
 
     getDrawMessage() {
         alert("Нічия");
+    }
+
+    getCurrentCell() {
+        return this.#currentCell;
+    }
+
+    setCurrentCell(cellId) {
+        this.#currentCell = new Cell(cellId);
+    }
+
+    getAllCells() {
+        return this.#allCells;
+    }
+
+    setAllCells(allCells) {
+        this.#allCells = allCells;
+    }
+
+    getOccupiedCells() {
+        return this.#occupiedCells;
+    }
+
+    setOccupiedCells(occupiedCells) {
+        this.#occupiedCells = occupiedCells;
+    }
+
+    getNumberOfCellsToWin() {
+        return this.#numberOfCellsToWin;
     }
 }
