@@ -42,10 +42,16 @@ function doStep(id) {
 }
 
 function isGameOver() {
-    if (game.getGameMap().checkWin()) {
-        setTimeout(function() { game.getWinnerMessage(); }, 100);
-        setTimeout(restartGame, 300);
+    if (game.getGameMap().isPlayerWon() === game.getGameMap().getNobodyWonFlag()) {
+        setTimeout(function() { game.getDrawMessage(); }, 200);
+        setTimeout(restartGame, 500);
         return true;
+    } else if (game.getGameMap().isPlayerWon()) {
+        setTimeout(function() { game.getWinnerMessage(); }, 200);
+        setTimeout(restartGame, 500);
+        return true;
+    } else {
+        return false;
     }
 }
 
