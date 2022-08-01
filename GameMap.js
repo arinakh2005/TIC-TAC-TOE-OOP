@@ -4,6 +4,7 @@ class GameMap {
     #allCells = [];
     #occupiedCells = [];
     #numberOfCellsToWin = 3;
+    #nobodyWonFlag = -1;
 
     constructor(size) {
         this.size = size;
@@ -53,15 +54,14 @@ class GameMap {
         document.getElementById('btn-start').setAttribute('disabled', 'false');
     }
 
-    checkWin() {
+    isPlayerWon() {
         if (wonInRow(this.size, this.#allCells, this.#numberOfCellsToWin)) return true;
         if (wonInColumn(this.size, this.#allCells,this.#numberOfCellsToWin)) return true;
         if (wonInMainDiagonal(this.size, this.#allCells)) return true;
         if (wonInAntiDiagonal(this.size, this.#allCells)) return true;
 
         if (this.isAllCellsFilled()) {
-            setTimeout(this.getDrawMessage, 200);
-            setTimeout(restartGame, 500);
+            return this.#nobodyWonFlag;
         }
 
         function wonInRow(size, allCells, numberOfCellsToWin) {
@@ -157,18 +157,12 @@ class GameMap {
 
     isAllCellsFilled() {
         let counter = 0;
-        this.#allCells.forEach(function(item) {
-            if (item.isOccupied === true) {
-                counter++;
-            }
-        });
+        this.#allCells.forEach(function(item) { if (item.isOccupied === true) counter++; });
         if (counter === this.size ** 2) {
             return true;
+        } else {
+            return false;
         }
-    }
-
-    getDrawMessage() {
-        alert("Нічия");
     }
 
     getCurrentCell() {
@@ -197,5 +191,9 @@ class GameMap {
 
     getNumberOfCellsToWin() {
         return this.#numberOfCellsToWin;
+    }
+
+    getNobodyWonFlag() {
+        return this.#nobodyWonFlag;
     }
 }

@@ -92,13 +92,13 @@ class Game {
         }
         if (isGameOver()){
             return;
-        }
-
-        let temp = this;
-        setTimeout(function() {
-            temp.getSecondPlayer().doComputerStep(temp.getGameMap().getAllCells());
+        } else if (!isGameOver()) {
+            let temp = this;
+            setTimeout(function() {
+                temp.getSecondPlayer().doComputerStep(temp.getGameMap().getAllCells());
             }, 300);
-        this.#playerWhoMadeLastStep = this.#firstPlayer;
+            this.#playerWhoMadeLastStep = this.#firstPlayer;
+        }
     }
 
     getWinnerMessage() {
@@ -111,5 +111,9 @@ class Game {
         } else {
             alert(`Переміг гравець ${this.#playerWhoMadeLastStep.getPlayerType()}`);
         }
+    }
+
+    getDrawMessage() {
+        alert("Нічия");
     }
 }
