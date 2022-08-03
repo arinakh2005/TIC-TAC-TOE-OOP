@@ -26,18 +26,18 @@ class GameMap {
             }
             table.appendChild(tr);
         }
-        const box = document.getElementsByClassName('table-game')[0];
+        const box = document.getElementsByClassName('game-area')[0];
         box.style.visibility = 'visible';
     }
 
     clearGameMap() {
-        let elem = document.getElementsByClassName("table")[0];
+        let elem = document.getElementsByClassName("game-area__table")[0];
         elem.parentNode.removeChild(elem);
 
-        let spaceForElement = document.getElementsByClassName('table-game')[0];
+        let spaceForElement = document.getElementsByClassName('game-area')[0];
 
         const gameMap = document.createElement('table');
-        gameMap.classList.add('table');
+        gameMap.classList.add('game-area__table');
         spaceForElement.appendChild(gameMap);
 
         elem = document.getElementById("player-number");
@@ -46,6 +46,7 @@ class GameMap {
         const labelWithPlayersNumber = document.createElement('p');
         labelWithPlayersNumber.id = 'player-number';
         labelWithPlayersNumber.textContent = "Хід: ...";
+        labelWithPlayersNumber.classList.add('game-area__player-number');
         spaceForElement.appendChild(labelWithPlayersNumber);
 
         this.#allCells = [];
@@ -57,8 +58,8 @@ class GameMap {
     isPlayerWon() {
         if (wonInRow(this.size, this.#allCells, this.#numberOfCellsToWin)) return true;
         if (wonInColumn(this.size, this.#allCells,this.#numberOfCellsToWin)) return true;
-        if (wonInMainDiagonal(this.size, this.#allCells)) return true;
-        if (wonInAntiDiagonal(this.size, this.#allCells)) return true;
+        if (wonInMainDiagonal(this.size, this.#allCells, this.#numberOfCellsToWin)) return true;
+        if (wonInAntiDiagonal(this.size, this.#allCells, this.#numberOfCellsToWin)) return true;
 
         if (this.isAllCellsFilled()) {
             return this.#nobodyWonFlag;
@@ -91,18 +92,10 @@ class GameMap {
             }
         }
 
-        function wonInMainDiagonal(size, allCells) {
+        function wonInMainDiagonal(size, allCells, numberOfCellsToWin) {
             let index1;
             let index2;
-            let allowableIndexes = [];
-
-            if (size === 3) {
-                allowableIndexes = [0];
-            } else if (size === 4) {
-                allowableIndexes = [0, 1, 4, 5];
-            } else if (size === 5) {
-                allowableIndexes = [0, 1, 2, 5, 6, 7, 10, 11, 12];
-            }
+            let allowableIndexes = fillArrOfAllowableIndexesInMainDiagonal(size, numberOfCellsToWin);
 
             let k = 0;
             let i = 0;
@@ -119,18 +112,43 @@ class GameMap {
             }
         }
 
-        function wonInAntiDiagonal(size, allCells) {
+        function fillArrOfAllowableIndexesInMainDiagonal(size, numberOfCellsToWin) {
+            let arrOfAllowableIndexes = [];
+            let step = size - numberOfCellsToWin;
+
+            let i = 0;
+            while(step > 0) {
+                arrOfAllowableIndexes.push(i++);
+                step--;
+            }
+            step = size - numberOfCellsToWin;
+
+            arrOfAllowableIndexes.push(i);
+            for (i = size; i < size**2; i++) {
+                if (step === 0){
+                    return arrOfAllowableIndexes;
+                }
+                if(size % i === 0 || i % size === 0) {
+                    arrOfAllowableIndexes.push(i);
+                    while(step > 0) {
+                        arrOfAllowableIndexes.push(++i);
+                        step--;
+                    }
+                    step = size - numberOfCellsToWin;
+                    if (arrOfAllowableIndexes.length >= (step+1)**2){
+                        return arrOfAllowableIndexes;
+                    }
+                }
+            }
+        }
+
+        function wonInAntiDiagonal(size, allCells, numberOfCellsToWin) {
             let index1;
             let index2;
-            let allowableIndexes = [];
-
-            if (size === 3) {
-                allowableIndexes = [2];
-            } else if (size === 4) {
-                allowableIndexes = [2, 3, 6, 7];
-            } else if (size === 5) {
-                allowableIndexes = [2, 3, 4, 7, 8, 9, 12, 13, 14];
-            }
+            let allowableIndexes = fillArrOfAllowableIndexesInAntiDiagonal(size, numberOfCellsToWin)
+                .sort(function(a, b) {
+                return a - b;
+            });
 
             let k = 0;
             let i = 0;
@@ -146,6 +164,36 @@ class GameMap {
                 k++;
             }
         }
+
+        function fillArrOfAllowableIndexesInAntiDiagonal(size, numberOfCellsToWin) {
+            let arrOfAllowableIndexes = [];
+            let step = size - numberOfCellsToWin;
+
+            let indexForRemember;
+            for (let i = size; i < size**2; i++) {
+
+                if (step === 0){
+                    arrOfAllowableIndexes.push(2);
+                    return arrOfAllowableIndexes;
+                }
+
+                if(size % i === 0 || i % size === 0) {
+                    i = i-1;
+                    arrOfAllowableIndexes.push(i);
+                    indexForRemember = i;
+                    while(step > 0) {
+                        arrOfAllowableIndexes.push(--i);
+                        step--;
+                    }
+                    step = size - numberOfCellsToWin;
+                    i = indexForRemember+size;
+                    if (arrOfAllowableIndexes.length >= (step+1)**2){
+                        return arrOfAllowableIndexes;
+                    }
+                }
+            }
+        }
+
     }
 
     isCellAvailableForStep(idHTML) {
