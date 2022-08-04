@@ -7,7 +7,14 @@ class GameMap {
     #nobodyWonFlag = -1;
 
     constructor(size) {
-        this.size = size;
+        if (size <= 3) {
+            this.size = 3;
+
+        } else if (size > 100) {
+            this.size = 100;
+        } else{
+            this.size = size;
+        }
     }
 
     buildGameMap() {

@@ -6,6 +6,12 @@ function createNewGame() {
 
     let select = document.getElementById("game-area");
     const size = +(select.value);
+    if (size <= 3){
+        select.value = 3;
+    } else if (size > 100) {
+        select.value = 100;
+    }
+
     select = document.getElementById("game-mode");
     game.setMode(+(select.value));
     game.setGameMap(size);
