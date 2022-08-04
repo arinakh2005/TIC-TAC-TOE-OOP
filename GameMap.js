@@ -9,7 +9,6 @@ class GameMap {
     constructor(size) {
         if (size <= 3) {
             this.size = 3;
-
         } else if (size > 100) {
             this.size = 100;
         } else{

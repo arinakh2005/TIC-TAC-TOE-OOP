@@ -8,8 +8,10 @@ function createNewGame() {
     const size = +(select.value);
     if (size <= 3){
         select.value = 3;
+        alert('Мінімальний розмір поля 3х3!');
     } else if (size > 100) {
         select.value = 100;
+        alert('Максимальний розмір поля 100х100!');
     }
 
     select = document.getElementById("game-mode");
